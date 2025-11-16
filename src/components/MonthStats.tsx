@@ -13,30 +13,30 @@ export function MonthStats({ currentMonth, expenses, mostExpensiveMonth }: Month
   const currentMonthTotal = useMemo(() => {
     const monthKey = format(currentMonth, 'yyyy-MM');
     return expenses
-      .filter(expense => expense.date.startsWith(monthKey))
+      .filter(expense => expense.month === monthKey)
       .reduce((sum, expense) => sum + expense.amount, 0);
   }, [currentMonth, expenses]);
 
   // Calculate total expense count
   const totalExpenseCount = expenses.length;
 
-  // Calculate average daily spending
-  const averageDailySpending = useMemo(() => {
+  // Calculate average monthly spending
+  const averageMonthlySpending = useMemo(() => {
     if (expenses.length === 0) return 0;
     
-    // Get unique dates
-    const uniqueDates = new Set(expenses.map(expense => expense.date));
-    const daysWithExpenses = uniqueDates.size;
+    // Get unique months
+    const uniqueMonths = new Set(expenses.map(expense => expense.month));
+    const monthsWithExpenses = uniqueMonths.size;
     
-    if (daysWithExpenses === 0) return 0;
+    if (monthsWithExpenses === 0) return 0;
     
     const totalAmount = expenses.reduce((sum, expense) => sum + expense.amount, 0);
-    return totalAmount / daysWithExpenses;
+    return totalAmount / monthsWithExpenses;
   }, [expenses]);
 
   // Animation state for numbers
   const [animatedCurrentTotal, setAnimatedCurrentTotal] = useState(currentMonthTotal);
-  const [animatedAverage, setAnimatedAverage] = useState(averageDailySpending);
+  const [animatedAverage, setAnimatedAverage] = useState(averageMonthlySpending);
 
   // Animate number changes
   useEffect(() => {
@@ -72,7 +72,7 @@ export function MonthStats({ currentMonth, expenses, mostExpensiveMonth }: Month
     const stepDuration = duration / steps;
     
     const startAvg = animatedAverage;
-    const endAvg = averageDailySpending;
+    const endAvg = averageMonthlySpending;
     const avgDiff = endAvg - startAvg;
     
     let currentStep = 0;
@@ -91,7 +91,7 @@ export function MonthStats({ currentMonth, expenses, mostExpensiveMonth }: Month
     }, stepDuration);
     
     return () => clearInterval(interval);
-  }, [averageDailySpending]);
+  }, [averageMonthlySpending]);
 
   // Format currency
   const formatCurrency = (amount: number) => {
@@ -167,11 +167,11 @@ export function MonthStats({ currentMonth, expenses, mostExpensiveMonth }: Month
         </p>
       </div>
 
-      {/* Average Daily Spending */}
+      {/* Average Monthly Spending */}
       <div className="bg-halloween-gray-dark rounded-lg shadow-xl border border-halloween-purple/30 p-4 sm:p-6 hover:scale-105 active:scale-100 transition-transform duration-300">
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-xs sm:text-sm font-semibold text-halloween-text-light/70 uppercase tracking-wide">
-            Daily Average
+            Monthly Average
           </h3>
           <span className="text-xl sm:text-2xl">🕷️</span>
         </div>
@@ -179,7 +179,7 @@ export function MonthStats({ currentMonth, expenses, mostExpensiveMonth }: Month
           {formatCurrency(animatedAverage)}
         </p>
         <p className="text-xs text-halloween-text-light/50 mt-1">
-          per day with expenses
+          per month with expenses
         </p>
       </div>
     </div>

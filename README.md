@@ -1,12 +1,13 @@
-# 🎃 Halloween Expense Calendar
+# 🎃 ExpensePumpkin
 
-A spooky-themed expense tracking calendar built with React, Vite, and Tailwind CSS.
+A spooky-themed monthly expense planning application built with React, Vite, and Tailwind CSS.
 
 ## Features
 
-- Track expenses with dates and amounts
-- Visual calendar display with Halloween theme
+- Plan expenses at the month level for better budgeting
+- Monthly view with Halloween theme
 - Ghost indicator for the most expensive month
+- CSV export functionality for data analysis
 - Local storage persistence
 - Fully client-side (no backend required)
 
@@ -22,7 +23,7 @@ A spooky-themed expense tracking calendar built with React, Vite, and Tailwind C
 ## Project Structure
 
 ```
-halloween-expense-calendar/
+expense-pumpkin/
 ├── src/
 │   ├── components/     # React components
 │   ├── hooks/          # Custom React hooks

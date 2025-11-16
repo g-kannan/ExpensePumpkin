@@ -86,6 +86,15 @@ export function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T 
               (storageError.name === 'QuotaExceededError' || 
                storageError.name === 'NS_ERROR_DOM_QUOTA_REACHED')) {
             console.warn('localStorage quota exceeded. Data will only persist in memory for this session.');
+            console.warn('Consider exporting your data and clearing old entries.');
+            
+            // Dispatch a custom event that the app can listen to
+            window.dispatchEvent(new CustomEvent('storage-quota-exceeded', {
+              detail: { key, error: storageError }
+            }));
+          } else {
+            // Other storage errors
+            console.warn('Failed to save to localStorage. Data will only persist in memory for this session.');
           }
         }
       }

@@ -1,17 +1,20 @@
 import { useState } from 'react';
 
 interface ExpenseFormProps {
-  onAddExpense: (date: string, amount: number) => void;
+  onAddExpense: (month: string, description: string, amount: number) => void;
   onClearAll: () => void;
+  onExportCSV?: () => void;
 }
 
 interface FormErrors {
-  date?: string;
+  month?: string;
+  description?: string;
   amount?: string;
 }
 
-export function ExpenseForm({ onAddExpense, onClearAll }: ExpenseFormProps) {
-  const [date, setDate] = useState('');
+export function ExpenseForm({ onAddExpense, onClearAll, onExportCSV }: ExpenseFormProps) {
+  const [month, setMonth] = useState('');
+  const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
   const [errors, setErrors] = useState<FormErrors>({});
   const [showClearModal, setShowClearModal] = useState(false);
@@ -19,9 +22,34 @@ export function ExpenseForm({ onAddExpense, onClearAll }: ExpenseFormProps) {
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
 
-    // Validate date
-    if (!date) {
-      newErrors.date = 'Please select a valid date';
+    // Validate month
+    if (!month) {
+      newErrors.month = 'Please select a month';
+    } else {
+      // Validate month format (YYYY-MM)
+      const monthRegex = /^\d{4}-\d{2}$/;
+      if (!monthRegex.test(month)) {
+        newErrors.month = 'Invalid month format';
+      } else {
+        // Validate month is not in the future (optional check)
+        const [year, monthNum] = month.split('-').map(Number);
+        const selectedDate = new Date(year, monthNum - 1);
+        const today = new Date();
+        const currentMonth = new Date(today.getFullYear(), today.getMonth());
+        
+        // Allow current and past months, but warn about future months
+        if (selectedDate > currentMonth) {
+          // This is just a warning, not blocking validation
+          // You could add a warning state if needed
+        }
+      }
+    }
+
+    // Validate description
+    if (!description || description.trim() === '') {
+      newErrors.description = 'Please enter a description';
+    } else if (description.trim().length > 200) {
+      newErrors.description = 'Description must be 200 characters or less';
     }
 
     // Validate amount
@@ -33,6 +61,10 @@ export function ExpenseForm({ onAddExpense, onClearAll }: ExpenseFormProps) {
         newErrors.amount = 'Please enter a valid number';
       } else if (numAmount <= 0) {
         newErrors.amount = 'Amount must be greater than zero';
+      } else if (numAmount > 999999999) {
+        newErrors.amount = 'Amount is too large';
+      } else if (!/^\d+(\.\d{1,2})?$/.test(amount)) {
+        newErrors.amount = 'Amount can have at most 2 decimal places';
       }
     }
 
@@ -44,9 +76,10 @@ export function ExpenseForm({ onAddExpense, onClearAll }: ExpenseFormProps) {
     e.preventDefault();
 
     if (validateForm()) {
-      onAddExpense(date, parseFloat(amount));
+      onAddExpense(month, description.trim(), parseFloat(amount));
       // Clear form after successful submission
-      setDate('');
+      setMonth('');
+      setDescription('');
       setAmount('');
       setErrors({});
     }
@@ -61,24 +94,43 @@ export function ExpenseForm({ onAddExpense, onClearAll }: ExpenseFormProps) {
     <>
       <div className="bg-halloween-gray-dark rounded-lg shadow-xl border border-halloween-purple/30 p-4 sm:p-6 mb-6 sm:mb-8 responsive-padding fade-in-animation">
         <h2 className="text-xl sm:text-2xl font-creepy text-halloween-orange mb-4 sm:mb-6 text-center">
-          Add Your Spooky Expenses 👻
+          Add Your Monthly Expenses 👻
         </h2>
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="date" className="block text-halloween-text-light font-medium mb-2">
-              Date
+            <label htmlFor="month" className="block text-halloween-text-light font-medium mb-2">
+              Month
             </label>
             <input
-              type="date"
-              id="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
+              type="month"
+              id="month"
+              value={month}
+              onChange={(e) => setMonth(e.target.value)}
               className="w-full bg-halloween-gray-medium border-2 border-halloween-purple focus:border-halloween-orange text-halloween-text-light rounded-lg px-4 py-2 outline-none transition-colors duration-300"
             />
-            {errors.date && (
+            {errors.month && (
               <p className="text-halloween-orange-bright text-sm mt-1 wiggle-animation">
-                ⚠️ {errors.date}
+                ⚠️ {errors.month}
+              </p>
+            )}
+          </div>
+
+          <div>
+            <label htmlFor="description" className="block text-halloween-text-light font-medium mb-2">
+              Description
+            </label>
+            <input
+              type="text"
+              id="description"
+              placeholder="e.g., Groceries, Rent, Utilities"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="w-full bg-halloween-gray-medium border-2 border-halloween-purple focus:border-halloween-orange text-halloween-text-light rounded-lg px-4 py-2 outline-none transition-colors duration-300"
+            />
+            {errors.description && (
+              <p className="text-halloween-orange-bright text-sm mt-1 wiggle-animation">
+                ⚠️ {errors.description}
               </p>
             )}
           </div>
@@ -110,6 +162,16 @@ export function ExpenseForm({ onAddExpense, onClearAll }: ExpenseFormProps) {
             >
               Add Expense 🎃
             </button>
+            
+            {onExportCSV && (
+              <button
+                type="button"
+                onClick={onExportCSV}
+                className="flex-1 bg-halloween-purple hover:bg-halloween-purple-dark text-white font-bold py-2.5 sm:py-3 px-4 sm:px-6 rounded-lg transition-all duration-300 transform hover:scale-105 active:scale-95"
+              >
+                Export CSV 📊
+              </button>
+            )}
             
             <button
               type="button"
