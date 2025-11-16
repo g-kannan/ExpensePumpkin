@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Halloween Expense Calendar</title>
+    <style>
+      /* Styles for noscript fallback */
+      .noscript-warning {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        background: linear-gradient(to bottom, #1A1A1D, #4A1942);
+        padding: 2rem;
+        font-family: system-ui, -apple-system, sans-serif;
+      }
+      .noscript-content {
+        max-width: 500px;
+        background: #2E2E32;
+        border: 2px solid rgba(107, 45, 92, 0.3);
+        border-radius: 0.5rem;
+        padding: 2rem;
+        text-align: center;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+      }
+      .noscript-emoji {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+      }
+      .noscript-title {
+        color: #FF6B35;
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin-bottom: 1rem;
+      }
+      .noscript-text {
+        color: rgba(245, 245, 245, 0.8);
+        line-height: 1.6;
+      }
+    </style>
+  </head>
+  <body>
+    <noscript>
+      <div class="noscript-warning">
+        <div class="noscript-content">
+          <div class="noscript-emoji">🎃</div>
+          <h1 class="noscript-title">JavaScript Required</h1>
+          <p class="noscript-text">
+            The Halloween Expense Calendar requires JavaScript to function. 
+            Please enable JavaScript in your browser settings to use this spooky app!
+          </p>
+        </div>
+      </div>
+    </noscript>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

@@ -1,0 +1,21 @@
+{
+  "enabled": true,
+  "name": "Task Completion Summary",
+  "description": "Generate a detailed summary file for completed tasks",
+  "version": "1",
+  "when": {
+    "type": "manual",
+    "patterns": [
+      "**/*tasks.md",
+      "**/*task*.md",
+      "**/TASK*.md",
+      "**/*TASK*.md",
+      "**/todo.md",
+      "**/TODO.md"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Analyze the tasks file and identify all completed tasks (marked with [x]). For each completed task that doesn't have a corresponding summary file, create a detailed summary file named 'task[N]-summary_DDMMYY.md' where N is the task number and DDMMYY is today's date (16112025). The summary should include:\n\n1. Task title and objective\n2. Detailed steps performed\n3. Files created or modified\n4. Key decisions made\n5. Results and outcomes\n6. Any issues encountered and how they were resolved\n\nCreate the summary file in the same directory as the tasks file."
+  }
+}

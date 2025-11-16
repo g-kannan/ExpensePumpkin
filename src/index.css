@@ -1,0 +1,288 @@
+@import url('https://fonts.googleapis.com/css2?family=Creepster&family=Inter:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-halloween-orange: #FF6B35;
+  --color-halloween-orange-bright: #F7931E;
+  --color-halloween-purple: #6B2D5C;
+  --color-halloween-purple-dark: #4A1942;
+  --color-halloween-charcoal: #1A1A1D;
+  --color-halloween-gray-dark: #2E2E32;
+  --color-halloween-gray-medium: #3E3E42;
+  --color-halloween-ghost: #E8E8E8;
+  --color-halloween-text-light: #F5F5F5;
+  
+  --font-family-creepy: 'Creepster', cursive;
+  --font-family-sans: 'Inter', 'Poppins', sans-serif;
+  
+  --animate-float: float 3s ease-in-out infinite;
+  --animate-float-slow: float-slow 4s ease-in-out infinite;
+  --animate-pulse-glow: pulse-glow 2s ease-in-out infinite;
+  --animate-spin-slow: spin-slow 3s linear infinite;
+  --animate-wiggle: wiggle 1s ease-in-out infinite;
+}
+
+/* Float Animation - for ghost and decorative elements */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+}
+
+/* Slower Float Animation */
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-15px); }
+}
+
+/* Pulse Glow Animation - for ghost and highlights */
+@keyframes pulse-glow {
+  0%, 100% { 
+    filter: drop-shadow(0 0 10px rgba(232, 232, 232, 0.8));
+  }
+  50% { 
+    filter: drop-shadow(0 0 20px rgba(232, 232, 232, 1));
+  }
+}
+
+/* Orange Pulse Animation - for buttons and interactive elements */
+@keyframes pulse-orange {
+  0%, 100% { 
+    box-shadow: 0 0 15px rgba(255, 107, 53, 0.5);
+  }
+  50% { 
+    box-shadow: 0 0 25px rgba(255, 107, 53, 0.8);
+  }
+}
+
+/* Slow Spin Animation - for loading spinners */
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Wiggle Animation - for error states and attention */
+@keyframes wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-5deg); }
+  75% { transform: rotate(5deg); }
+}
+
+/* Fade In Animation */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Slide Up Animation */
+@keyframes slide-up {
+  from { 
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+body {
+  background-color: var(--color-halloween-charcoal);
+  color: var(--color-halloween-text-light);
+  font-family: var(--font-family-sans);
+  overflow-x: hidden;
+}
+
+/* Glow Effects */
+.glow-orange {
+  box-shadow: 0 0 15px rgba(255, 107, 53, 0.5);
+}
+
+.glow-orange-strong {
+  box-shadow: 0 0 20px rgba(255, 107, 53, 0.6);
+}
+
+.glow-ghost {
+  filter: drop-shadow(0 0 10px rgba(232, 232, 232, 0.8));
+}
+
+/* Animation Classes */
+.pulse-glow-animation {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.pulse-orange-animation {
+  animation: pulse-orange 2s ease-in-out infinite;
+}
+
+.float-animation {
+  animation: float 3s ease-in-out infinite;
+}
+
+.float-slow-animation {
+  animation: float-slow 4s ease-in-out infinite;
+}
+
+.wiggle-animation {
+  animation: wiggle 1s ease-in-out infinite;
+}
+
+.fade-in-animation {
+  animation: fade-in 0.5s ease-in;
+}
+
+.slide-up-animation {
+  animation: slide-up 0.5s ease-out;
+}
+
+/* Spider Web Background Pattern - Enhanced with SVG-like patterns */
+.spider-web-pattern {
+  background-image: 
+    /* Spider web corners */
+    radial-gradient(circle at 20% 30%, transparent 0%, transparent 48%, rgba(232, 232, 232, 0.1) 48%, rgba(232, 232, 232, 0.1) 50%, transparent 50%),
+    radial-gradient(circle at 80% 20%, transparent 0%, transparent 48%, rgba(232, 232, 232, 0.1) 48%, rgba(232, 232, 232, 0.1) 50%, transparent 50%),
+    radial-gradient(circle at 60% 70%, transparent 0%, transparent 48%, rgba(232, 232, 232, 0.1) 48%, rgba(232, 232, 232, 0.1) 50%, transparent 50%),
+    /* Web strands - diagonal lines */
+    linear-gradient(135deg, transparent 45%, rgba(232, 232, 232, 0.05) 45%, rgba(232, 232, 232, 0.05) 55%, transparent 55%),
+    linear-gradient(45deg, transparent 45%, rgba(232, 232, 232, 0.05) 45%, rgba(232, 232, 232, 0.05) 55%, transparent 55%),
+    /* Additional web detail */
+    repeating-linear-gradient(90deg, transparent, transparent 50px, rgba(232, 232, 232, 0.02) 50px, rgba(232, 232, 232, 0.02) 51px),
+    repeating-linear-gradient(0deg, transparent, transparent 50px, rgba(232, 232, 232, 0.02) 50px, rgba(232, 232, 232, 0.02) 51px);
+  background-size: 400px 400px, 500px 500px, 450px 450px, 100px 100px, 100px 100px, 100% 100%, 100% 100%;
+  background-position: 0 0, 100% 0, 50% 100%, 0 0, 0 0, 0 0, 0 0;
+}
+
+/* Spider Web SVG Background - Alternative detailed pattern */
+.spider-web-svg {
+  background-image: url("data:image/svg+xml,%3Csvg width='200' height='200' xmlns='http://www.w3.org/2000/svg'%3E%3Cg opacity='0.1' stroke='%23E8E8E8' fill='none'%3E%3Cpath d='M100,100 L100,20 M100,100 L150,35 M100,100 L180,100 M100,100 L150,165 M100,100 L100,180 M100,100 L50,165 M100,100 L20,100 M100,100 L50,35' stroke-width='1'/%3E%3Ccircle cx='100' cy='100' r='20' stroke-width='1'/%3E%3Ccircle cx='100' cy='100' r='40' stroke-width='1'/%3E%3Ccircle cx='100' cy='100' r='60' stroke-width='1'/%3E%3Ccircle cx='100' cy='100' r='80' stroke-width='1'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 200px 200px;
+  background-position: 0 0, 100px 100px;
+  background-repeat: repeat;
+}
+
+/* Bat Animation Variations */
+.bat-decoration {
+  animation: float 6s ease-in-out infinite;
+}
+
+.bat-left {
+  animation-duration: 7s;
+}
+
+.bat-right {
+  animation-duration: 8s;
+}
+
+.bat-bottom {
+  animation-duration: 9s;
+}
+
+/* Loading Spinner - Halloween themed */
+.halloween-spinner {
+  width: 60px;
+  height: 60px;
+  border: 4px solid rgba(255, 107, 53, 0.2);
+  border-top-color: var(--color-halloween-orange);
+  border-radius: 50%;
+  animation: spin-slow 1.5s linear infinite;
+}
+
+.halloween-spinner-small {
+  width: 30px;
+  height: 30px;
+  border-width: 3px;
+}
+
+/* Pumpkin Spinner Animation */
+.pumpkin-spinner {
+  display: inline-block;
+  font-size: 3rem;
+  animation: spin-slow 2s linear infinite;
+}
+
+/* Loading Container */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 2rem;
+}
+
+/* Responsive Design Utilities */
+@media (max-width: 640px) {
+  /* Smaller text on mobile */
+  .responsive-title {
+    font-size: 2rem !important;
+  }
+  
+  /* Adjust padding on mobile */
+  .responsive-padding {
+    padding: 1rem !important;
+  }
+  
+  /* Stack buttons vertically on mobile */
+  .responsive-button-group {
+    flex-direction: column !important;
+  }
+  
+  /* Smaller calendar cells on mobile */
+  .responsive-calendar-day {
+    font-size: 0.75rem !important;
+    padding: 0.25rem !important;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Adjust container width on tablets */
+  .responsive-container {
+    max-width: 100% !important;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  .glow-orange,
+  .glow-orange-strong {
+    box-shadow: none;
+    border: 2px solid var(--color-halloween-orange);
+  }
+  
+  .glow-ghost {
+    filter: none;
+    border: 2px solid var(--color-halloween-ghost);
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Focus Visible Styles for Accessibility */
+*:focus-visible {
+  outline: 2px solid var(--color-halloween-orange);
+  outline-offset: 2px;
+}
+
+/* Print Styles */
+@media print {
+  .bat-decoration,
+  .spider-web-pattern,
+  .halloween-spinner {
+    display: none !important;
+  }
+  
+  body {
+    background: white !important;
+    color: black !important;
+  }
+}
