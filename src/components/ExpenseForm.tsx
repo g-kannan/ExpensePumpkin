@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { SUPPORTED_CURRENCIES, DEFAULT_CURRENCY, getCurrencySymbol } from '../utils/currencyConfig';
+import { EXPENSE_CATEGORIES, DEFAULT_CATEGORY, getCategoryDisplay } from '../utils/categoryConfig';
 
 interface ExpenseFormProps {
   onAddExpense: (month: string, description: string, amount: number, currency: string) => void;
@@ -9,30 +10,46 @@ interface ExpenseFormProps {
 
 interface FormErrors {
   month?: string;
-  description?: string;
+  category?: string;
   amount?: string;
   currency?: string;
 }
 
 const CURRENCY_STORAGE_KEY = 'expense-pumpkin-currency';
 
+interface RepeatableExpense {
+  category: string;
+  amount: string;
+  currency: string;
+}
+
+const REPEATABLE_EXPENSES_KEY = 'expense-pumpkin-repeatable';
+
 export function ExpenseForm({ onAddExpense, onClearAll, onExportCSV }: ExpenseFormProps) {
   const [month, setMonth] = useState('');
-  const [description, setDescription] = useState('');
+  const [category, setCategory] = useState(DEFAULT_CATEGORY);
   const [amount, setAmount] = useState('');
   const [currency, setCurrency] = useState(DEFAULT_CURRENCY);
+  const [isRepeatable, setIsRepeatable] = useState(false);
+  const [repeatableExpenses, setRepeatableExpenses] = useState<RepeatableExpense[]>([]);
   const [errors, setErrors] = useState<FormErrors>({});
   const [showClearModal, setShowClearModal] = useState(false);
+  const [showRepeatableList, setShowRepeatableList] = useState(false);
 
-  // Load saved currency preference on mount
+  // Load saved currency preference and repeatable expenses on mount
   useEffect(() => {
     try {
       const savedCurrency = localStorage.getItem(CURRENCY_STORAGE_KEY);
       if (savedCurrency && SUPPORTED_CURRENCIES.some(c => c.code === savedCurrency)) {
         setCurrency(savedCurrency);
       }
+      
+      const savedRepeatable = localStorage.getItem(REPEATABLE_EXPENSES_KEY);
+      if (savedRepeatable) {
+        setRepeatableExpenses(JSON.parse(savedRepeatable));
+      }
     } catch (error) {
-      console.warn('Could not load saved currency:', error);
+      console.warn('Could not load saved preferences:', error);
     }
   }, []);
 
@@ -71,11 +88,11 @@ export function ExpenseForm({ onAddExpense, onClearAll, onExportCSV }: ExpenseFo
       }
     }
 
-    // Validate description
-    if (!description || description.trim() === '') {
-      newErrors.description = 'Please enter a description';
-    } else if (description.trim().length > 200) {
-      newErrors.description = 'Description must be 200 characters or less';
+    // Validate category
+    if (!category) {
+      newErrors.category = 'Please select a category';
+    } else if (!EXPENSE_CATEGORIES.some(c => c.value === category)) {
+      newErrors.category = 'Invalid category selected';
     }
 
     // Validate currency
@@ -109,13 +126,62 @@ export function ExpenseForm({ onAddExpense, onClearAll, onExportCSV }: ExpenseFo
     e.preventDefault();
 
     if (validateForm()) {
-      onAddExpense(month, description.trim(), parseFloat(amount), currency);
+      // Get category display name for the expense
+      const categoryDisplay = getCategoryDisplay(category);
+      const description = `${categoryDisplay.icon} ${categoryDisplay.label}`;
+      
+      onAddExpense(month, description, parseFloat(amount), currency);
+      
+      // Save as repeatable if checkbox is checked
+      if (isRepeatable) {
+        const newRepeatable: RepeatableExpense = {
+          category,
+          amount,
+          currency,
+        };
+        
+        // Check if this expense already exists in repeatables
+        const exists = repeatableExpenses.some(
+          exp => exp.category === newRepeatable.category && 
+                 exp.amount === newRepeatable.amount && 
+                 exp.currency === newRepeatable.currency
+        );
+        
+        if (!exists) {
+          const updated = [...repeatableExpenses, newRepeatable];
+          setRepeatableExpenses(updated);
+          try {
+            localStorage.setItem(REPEATABLE_EXPENSES_KEY, JSON.stringify(updated));
+          } catch (error) {
+            console.warn('Could not save repeatable expense:', error);
+          }
+        }
+      }
+      
       // Clear form after successful submission
       setMonth('');
-      setDescription('');
+      setCategory(DEFAULT_CATEGORY);
       setAmount('');
+      setIsRepeatable(false);
       // Keep currency selected for next entry
       setErrors({});
+    }
+  };
+
+  const handleQuickAdd = (repeatable: RepeatableExpense) => {
+    setCategory(repeatable.category);
+    setAmount(repeatable.amount);
+    setCurrency(repeatable.currency);
+    setShowRepeatableList(false);
+  };
+
+  const handleRemoveRepeatable = (index: number) => {
+    const updated = repeatableExpenses.filter((_, i) => i !== index);
+    setRepeatableExpenses(updated);
+    try {
+      localStorage.setItem(REPEATABLE_EXPENSES_KEY, JSON.stringify(updated));
+    } catch (error) {
+      console.warn('Could not update repeatable expenses:', error);
     }
   };
 
@@ -151,20 +217,24 @@ export function ExpenseForm({ onAddExpense, onClearAll, onExportCSV }: ExpenseFo
           </div>
 
           <div>
-            <label htmlFor="description" className="block text-halloween-text-light font-medium mb-2">
-              Description
+            <label htmlFor="category" className="block text-halloween-text-light font-medium mb-2">
+              Category
             </label>
-            <input
-              type="text"
-              id="description"
-              placeholder="e.g., Groceries, Rent, Utilities"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="w-full bg-halloween-gray-medium border-2 border-halloween-purple focus:border-halloween-orange text-halloween-text-light rounded-lg px-4 py-2 outline-none transition-colors duration-300"
-            />
-            {errors.description && (
+            <select
+              id="category"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="w-full bg-halloween-gray-medium border-2 border-halloween-purple focus:border-halloween-orange text-halloween-text-light rounded-lg px-4 py-2 outline-none transition-colors duration-300 cursor-pointer"
+            >
+              {EXPENSE_CATEGORIES.map((cat) => (
+                <option key={cat.value} value={cat.value}>
+                  {cat.icon} {cat.label}
+                </option>
+              ))}
+            </select>
+            {errors.category && (
               <p className="text-halloween-orange-bright text-sm mt-1 wiggle-animation">
-                ⚠️ {errors.description}
+                ⚠️ {errors.category}
               </p>
             )}
           </div>
@@ -217,34 +287,110 @@ export function ExpenseForm({ onAddExpense, onClearAll, onExportCSV }: ExpenseFo
             )}
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-2 responsive-button-group">
-            <button
-              type="submit"
-              className="flex-1 bg-halloween-orange hover:bg-halloween-orange-bright text-white font-bold py-2.5 sm:py-3 px-4 sm:px-6 rounded-lg transition-all duration-300 hover:glow-orange-strong transform hover:scale-105 active:scale-95"
-            >
-              Add Expense 🎃
-            </button>
-            
-            {onExportCSV && (
+          {/* Repeatable Expense Checkbox */}
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="repeatable"
+              checked={isRepeatable}
+              onChange={(e) => setIsRepeatable(e.target.checked)}
+              className="w-4 h-4 bg-halloween-gray-medium border-2 border-halloween-purple rounded cursor-pointer accent-halloween-orange"
+            />
+            <label htmlFor="repeatable" className="text-halloween-text-light text-sm cursor-pointer">
+              Save as repeatable expense (e.g., Rent, Subscriptions)
+            </label>
+          </div>
+
+          <div className="flex flex-col gap-3">
+            {/* Quick Add Repeatable Button */}
+            {repeatableExpenses.length > 0 && (
               <button
                 type="button"
-                onClick={onExportCSV}
-                className="flex-1 bg-halloween-purple hover:bg-halloween-purple-dark text-white font-bold py-2.5 sm:py-3 px-4 sm:px-6 rounded-lg transition-all duration-300 transform hover:scale-105 active:scale-95"
+                onClick={() => setShowRepeatableList(!showRepeatableList)}
+                className="w-full bg-halloween-gray-medium hover:bg-halloween-purple/50 text-halloween-text-light font-medium py-2 px-4 rounded-lg transition-all duration-300 border border-halloween-purple/30 hover:border-halloween-purple"
               >
-                Export CSV 📊
+                🔄 Quick Add Repeatable ({repeatableExpenses.length})
               </button>
             )}
-            
-            <button
-              type="button"
-              onClick={() => setShowClearModal(true)}
-              className="bg-halloween-purple hover:bg-halloween-purple-dark text-white font-bold py-2.5 sm:py-3 px-4 sm:px-6 rounded-lg transition-all duration-300 transform hover:scale-105 active:scale-95"
-            >
-              Clear All 🧹
-            </button>
+
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 responsive-button-group">
+              <button
+                type="submit"
+                className="flex-1 bg-halloween-orange hover:bg-halloween-orange-bright text-white font-bold py-2.5 sm:py-3 px-4 sm:px-6 rounded-lg transition-all duration-300 hover:glow-orange-strong transform hover:scale-105 active:scale-95"
+              >
+                Add Expense 🎃
+              </button>
+              
+              {onExportCSV && (
+                <button
+                  type="button"
+                  onClick={onExportCSV}
+                  className="flex-1 bg-halloween-purple hover:bg-halloween-purple-dark text-white font-bold py-2.5 sm:py-3 px-4 sm:px-6 rounded-lg transition-all duration-300 transform hover:scale-105 active:scale-95"
+                >
+                  Export CSV 📊
+                </button>
+              )}
+              
+              <button
+                type="button"
+                onClick={() => setShowClearModal(true)}
+                className="bg-halloween-purple hover:bg-halloween-purple-dark text-white font-bold py-2.5 sm:py-3 px-4 sm:px-6 rounded-lg transition-all duration-300 transform hover:scale-105 active:scale-95"
+              >
+                Clear All 🧹
+              </button>
+            </div>
           </div>
         </form>
       </div>
+
+      {/* Repeatable Expenses List */}
+      {showRepeatableList && repeatableExpenses.length > 0 && (
+        <div className="bg-halloween-gray-dark rounded-lg shadow-xl border border-halloween-purple/30 p-4 mb-4 fade-in-animation">
+          <div className="flex justify-between items-center mb-3">
+            <h3 className="text-lg font-bold text-halloween-orange">Repeatable Expenses</h3>
+            <button
+              onClick={() => setShowRepeatableList(false)}
+              className="text-halloween-text-muted hover:text-halloween-text-light transition-colors"
+            >
+              ✕
+            </button>
+          </div>
+          <div className="space-y-2">
+            {repeatableExpenses.map((repeatable, index) => {
+              const categoryDisplay = getCategoryDisplay(repeatable.category);
+              return (
+                <div
+                  key={index}
+                  className="bg-halloween-gray-medium rounded-lg p-3 flex justify-between items-center hover:bg-halloween-purple/20 transition-all duration-200"
+                >
+                  <div className="flex-1">
+                    <div className="text-halloween-text-light font-medium">
+                      {categoryDisplay.icon} {categoryDisplay.label}
+                    </div>
+                    <div className="text-sm text-halloween-text-muted">
+                      {getCurrencySymbol(repeatable.currency)}{parseFloat(repeatable.amount).toFixed(2)} ({repeatable.currency})
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleQuickAdd(repeatable)}
+                      className="bg-halloween-orange hover:bg-halloween-orange-bright text-white px-3 py-1 rounded transition-all duration-200 text-sm"
+                    >
+                      Use
+                    </button>
+                    <button
+                      onClick={() => handleRemoveRepeatable(index)}
+                      className="bg-halloween-purple hover:bg-halloween-purple-dark text-white px-3 py-1 rounded transition-all duration-200 text-sm"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Clear Confirmation Modal */}
       {showClearModal && (
