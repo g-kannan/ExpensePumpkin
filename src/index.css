@@ -177,6 +177,123 @@ body {
   animation-duration: 9s;
 }
 
+/* Animated Bats - Flying across screen */
+@keyframes bat-fly-0 {
+  0% {
+    transform: translateX(0) translateY(0);
+  }
+  25% {
+    transform: translateX(25vw) translateY(-10px);
+  }
+  50% {
+    transform: translateX(50vw) translateY(15px);
+  }
+  75% {
+    transform: translateX(75vw) translateY(-5px);
+  }
+  100% {
+    transform: translateX(calc(100vw + 60px)) translateY(10px);
+  }
+}
+
+@keyframes bat-fly-1 {
+  0% {
+    transform: translateX(0) translateY(0);
+  }
+  25% {
+    transform: translateX(25vw) translateY(15px);
+  }
+  50% {
+    transform: translateX(50vw) translateY(-20px);
+  }
+  75% {
+    transform: translateX(75vw) translateY(10px);
+  }
+  100% {
+    transform: translateX(calc(100vw + 60px)) translateY(-5px);
+  }
+}
+
+@keyframes bat-fly-2 {
+  0% {
+    transform: translateX(0) translateY(0);
+  }
+  25% {
+    transform: translateX(25vw) translateY(-15px);
+  }
+  50% {
+    transform: translateX(50vw) translateY(20px);
+  }
+  75% {
+    transform: translateX(75vw) translateY(-10px);
+  }
+  100% {
+    transform: translateX(calc(100vw + 60px)) translateY(5px);
+  }
+}
+
+@keyframes bat-fly-3 {
+  0% {
+    transform: translateX(0) translateY(0);
+  }
+  25% {
+    transform: translateX(25vw) translateY(10px);
+  }
+  50% {
+    transform: translateX(50vw) translateY(-15px);
+  }
+  75% {
+    transform: translateX(75vw) translateY(20px);
+  }
+  100% {
+    transform: translateX(calc(100vw + 60px)) translateY(-10px);
+  }
+}
+
+@keyframes bat-fly-4 {
+  0% {
+    transform: translateX(0) translateY(0);
+  }
+  25% {
+    transform: translateX(25vw) translateY(-20px);
+  }
+  50% {
+    transform: translateX(50vw) translateY(10px);
+  }
+  75% {
+    transform: translateX(75vw) translateY(-15px);
+  }
+  100% {
+    transform: translateX(calc(100vw + 60px)) translateY(15px);
+  }
+}
+
+/* Bat animation classes with randomized durations and delays */
+.bat-animated.bat-0 {
+  animation: bat-fly-0 18s linear infinite;
+  animation-delay: 0s;
+}
+
+.bat-animated.bat-1 {
+  animation: bat-fly-1 25s linear infinite;
+  animation-delay: 3s;
+}
+
+.bat-animated.bat-2 {
+  animation: bat-fly-2 20s linear infinite;
+  animation-delay: 7s;
+}
+
+.bat-animated.bat-3 {
+  animation: bat-fly-3 28s linear infinite;
+  animation-delay: 5s;
+}
+
+.bat-animated.bat-4 {
+  animation: bat-fly-4 22s linear infinite;
+  animation-delay: 10s;
+}
+
 /* Loading Spinner - Halloween themed */
 .halloween-spinner {
   width: 60px;
@@ -270,6 +387,11 @@ body {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+  
+  /* Hide animated bats completely for reduced motion */
+  .bat-animated {
+    display: none !important;
   }
 }
 

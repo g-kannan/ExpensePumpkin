@@ -7,6 +7,7 @@ export interface Expense {
   month: string; // Format: YYYY-MM
   description: string;
   amount: number;
+  currency: string; // ISO 4217 currency code (e.g., "INR", "USD", "EUR")
   timestamp: number;
 }
 
@@ -100,6 +101,7 @@ function migrateOldExpenses(): MigrationResult {
         month,
         description: `Migrated expenses (${data.count} expense${data.count > 1 ? 's' : ''})`,
         amount: data.total,
+        currency: 'USD', // Default currency for migrated data
         timestamp: Date.now(),
       })
     );
@@ -167,12 +169,13 @@ export function useExpenses() {
   /**
    * Add a new expense
    */
-  const addExpense = (month: string, description: string, amount: number) => {
+  const addExpense = (month: string, description: string, amount: number, currency: string) => {
     const newExpense: Expense = {
       id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       month,
       description,
       amount,
+      currency,
       timestamp: Date.now(),
     };
 

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { format, parse } from 'date-fns';
 import type { Expense } from '../hooks/useExpenses';
+import { getCurrencySymbol } from '../utils/currencyConfig';
 
 interface MonthCardProps {
   month: string; // Format: "YYYY-MM"
@@ -18,8 +19,32 @@ export function MonthCard({ month, expenses, isCurrentMonth, isMostExpensive }: 
   const year = format(monthDate, 'yyyy');
 
   // Calculate total and count
-  const total = expenses.reduce((sum, expense) => sum + expense.amount, 0);
   const count = expenses.length;
+  
+  // Group expenses by currency
+  const expensesByCurrency = expenses.reduce((acc, expense) => {
+    const currency = expense.currency || 'USD';
+    if (!acc[currency]) {
+      acc[currency] = [];
+    }
+    acc[currency].push(expense);
+    return acc;
+  }, {} as Record<string, Expense[]>);
+
+  // Calculate totals by currency
+  const currencyTotals = Object.entries(expensesByCurrency).map(([currency, expenseList]) => ({
+    currency,
+    total: expenseList.reduce((sum, expense) => sum + expense.amount, 0),
+    symbol: getCurrencySymbol(currency),
+  }));
+
+  // Determine if we have multiple currencies
+  const hasMultipleCurrencies = currencyTotals.length > 1;
+  
+  // Primary currency (the one with the highest total or first one)
+  const primaryCurrency = currencyTotals.length > 0 
+    ? currencyTotals.sort((a, b) => b.total - a.total)[0]
+    : null;
 
   return (
     <div
@@ -81,7 +106,7 @@ export function MonthCard({ month, expenses, isCurrentMonth, isMostExpensive }: 
       <button
         onClick={() => setIsExpanded(!isExpanded)}
         className="w-full text-left focus:outline-none focus:ring-2 focus:ring-halloween-orange rounded transition-all duration-200 hover:opacity-90"
-        aria-label={`${monthName} ${year} - ${count} expense${count !== 1 ? 's' : ''}, total $${total.toFixed(2)}`}
+        aria-label={`${monthName} ${year} - ${count} expense${count !== 1 ? 's' : ''}`}
         aria-expanded={isExpanded}
       >
         <div className="flex justify-between items-start mb-2">
@@ -93,9 +118,19 @@ export function MonthCard({ month, expenses, isCurrentMonth, isMostExpensive }: 
 
         <div className="flex justify-between items-center">
           <div>
-            <div className="text-2xl font-bold text-halloween-orange">
-              ${total.toFixed(2)}
-            </div>
+            {hasMultipleCurrencies ? (
+              <div className="text-2xl font-bold text-halloween-orange">
+                Mixed
+              </div>
+            ) : primaryCurrency ? (
+              <div className="text-2xl font-bold text-halloween-orange">
+                {primaryCurrency.symbol}{primaryCurrency.total.toFixed(2)}
+              </div>
+            ) : (
+              <div className="text-2xl font-bold text-halloween-orange">
+                $0.00
+              </div>
+            )}
             <div className="text-sm text-halloween-text-muted">
               {count} expense{count !== 1 ? 's' : ''}
             </div>
@@ -119,27 +154,59 @@ export function MonthCard({ month, expenses, isCurrentMonth, isMostExpensive }: 
 
       {/* Expanded Expense List */}
       {isExpanded && count > 0 && (
-        <div className="mt-4 pt-4 border-t border-halloween-purple/30 space-y-2 fade-in-animation max-h-64 overflow-y-auto">
-          {expenses.map((expense) => (
-            <div
-              key={expense.id}
-              className="bg-halloween-gray-medium rounded p-2 sm:p-3 hover:bg-halloween-purple/20 transition-all duration-200 hover:scale-[1.01]"
-            >
-              <div className="flex justify-between items-start gap-2">
-                <div className="flex-1 min-w-0">
-                  <div className="text-halloween-text-light font-medium text-sm sm:text-base truncate">
-                    {expense.description}
-                  </div>
-                  <div className="text-xs text-halloween-text-muted mt-1">
-                    {new Date(expense.timestamp).toLocaleDateString()}
-                  </div>
+        <div className="mt-4 pt-4 border-t border-halloween-purple/30 space-y-3 fade-in-animation max-h-64 overflow-y-auto">
+          {hasMultipleCurrencies ? (
+            // Group by currency when multiple currencies exist
+            Object.entries(expensesByCurrency).map(([currency, currencyExpenses]) => (
+              <div key={currency} className="space-y-2">
+                <div className="text-xs font-semibold text-halloween-purple uppercase tracking-wide">
+                  {currency} ({getCurrencySymbol(currency)})
                 </div>
-                <div className="text-halloween-orange font-bold text-sm sm:text-base whitespace-nowrap">
-                  ${expense.amount.toFixed(2)}
+                {currencyExpenses.map((expense) => (
+                  <div
+                    key={expense.id}
+                    className="bg-halloween-gray-medium rounded p-2 sm:p-3 hover:bg-halloween-purple/20 transition-all duration-200 hover:scale-[1.01]"
+                  >
+                    <div className="flex justify-between items-start gap-2">
+                      <div className="flex-1 min-w-0">
+                        <div className="text-halloween-text-light font-medium text-sm sm:text-base truncate">
+                          {expense.description}
+                        </div>
+                        <div className="text-xs text-halloween-text-muted mt-1">
+                          {new Date(expense.timestamp).toLocaleDateString()}
+                        </div>
+                      </div>
+                      <div className="text-halloween-orange font-bold text-sm sm:text-base whitespace-nowrap">
+                        {getCurrencySymbol(expense.currency || 'USD')}{expense.amount.toFixed(2)}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ))
+          ) : (
+            // Single currency - no grouping needed
+            expenses.map((expense) => (
+              <div
+                key={expense.id}
+                className="bg-halloween-gray-medium rounded p-2 sm:p-3 hover:bg-halloween-purple/20 transition-all duration-200 hover:scale-[1.01]"
+              >
+                <div className="flex justify-between items-start gap-2">
+                  <div className="flex-1 min-w-0">
+                    <div className="text-halloween-text-light font-medium text-sm sm:text-base truncate">
+                      {expense.description}
+                    </div>
+                    <div className="text-xs text-halloween-text-muted mt-1">
+                      {new Date(expense.timestamp).toLocaleDateString()}
+                    </div>
+                  </div>
+                  <div className="text-halloween-orange font-bold text-sm sm:text-base whitespace-nowrap">
+                    {getCurrencySymbol(expense.currency || 'USD')}{expense.amount.toFixed(2)}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       )}
 

@@ -13,6 +13,11 @@ This document outlines the requirements for transforming the Halloween Expense C
 - **Planning Mode**: The application's primary use case focused on budgeting and planning rather than tracking actual daily expenses
 - **Application**: The ExpensePumpkin web application system
 - **User**: A person who interacts with the ExpensePumpkin application
+- **Currency Dropdown**: A select input element that allows users to choose from multiple currency options
+- **Currency Code**: A three-letter ISO 4217 code representing a currency (e.g., USD, EUR, GBP)
+- **Animated Bats**: Decorative SVG or image elements that move across the screen using CSS animations
+- **Decorative Elements**: Non-functional visual components that enhance the Halloween theme without impacting core features
+- **Background Layer**: A visual layer positioned behind interactive content using CSS z-index
 
 ## Requirements
 
@@ -74,3 +79,43 @@ This document outlines the requirements for transforming the Halloween Expense C
 2. THE Application SHALL update decorative elements to reflect the "pumpkin" branding where appropriate
 3. THE Application SHALL ensure the monthly planning interface is visually clear and easy to navigate
 4. THE Application SHALL maintain responsive design for mobile and desktop devices
+
+### Requirement 6
+
+**User Story:** As a user who tracks expenses in different currencies, I want to select a currency for my expenses, so that I can properly track expenses in my preferred currency format.
+
+#### Acceptance Criteria
+
+1. THE Application SHALL provide a currency dropdown selector in the expense form
+2. THE Application SHALL support at least INR, USD, EUR, GBP, JPY, and CAD currency options
+3. THE Application SHALL default to INR (Indian Rupee) as the initial currency selection
+4. WHEN a user selects a currency, THE Application SHALL store the currency code with each expense
+5. THE Application SHALL display the appropriate currency symbol next to expense amounts throughout the interface
+6. THE Application SHALL persist the last selected currency as the default for new expenses
+7. THE Application SHALL include the currency field in CSV exports
+
+### Requirement 7
+
+**User Story:** As a user who enjoys the Halloween theme, I want to see animated bats flying around the interface, so that the application feels more immersive and festive.
+
+#### Acceptance Criteria
+
+1. THE Application SHALL display multiple animated bat elements flying across the screen
+2. THE Application SHALL animate bats with smooth, natural flying motion patterns
+3. THE Application SHALL ensure bat animations do not interfere with user interactions or obscure important content
+4. THE Application SHALL position bats in the background layer behind interactive elements
+5. THE Application SHALL use CSS animations or transitions for performance optimization
+6. THE Application SHALL display at least 3-5 bats with varied flight paths and speeds
+
+### Requirement 8
+
+**User Story:** As a user who appreciates the Halloween aesthetic, I want enhanced Halloween decorative elements throughout the interface, so that the theme feels more complete and engaging.
+
+#### Acceptance Criteria
+
+1. THE Application SHALL add spider web decorative elements in corners or edges of the interface
+2. THE Application SHALL include additional Halloween-themed icons or imagery such as ghosts, pumpkins, or spiders
+3. THE Application SHALL add subtle particle effects or floating elements that enhance the spooky atmosphere
+4. THE Application SHALL ensure decorative elements complement the existing color scheme
+5. THE Application SHALL maintain visual hierarchy so decorations do not distract from core functionality
+6. THE Application SHALL use decorative elements that are performant and do not impact application responsiveness

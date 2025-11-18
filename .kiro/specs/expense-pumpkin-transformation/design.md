@@ -37,8 +37,9 @@ The core architecture remains unchanged, but the following modifications will be
 export interface Expense {
   id: string;
   month: string;        // Format: "YYYY-MM"
-  description: string;  // New field for expense description
+  description: string;
   amount: number;
+  currency: string;     // ISO 4217 currency code (e.g., "INR", "USD", "EUR")
   timestamp: number;
 }
 ```
@@ -46,7 +47,28 @@ export interface Expense {
 **Changes from current model:**
 - Replace `date: string` (YYYY-MM-DD) with `month: string` (YYYY-MM)
 - Add `description: string` field for expense details
+- Add `currency: string` field for currency code
 - Keep `id`, `amount`, and `timestamp` unchanged
+
+#### Currency Configuration
+```typescript
+export interface CurrencyOption {
+  code: string;         // ISO 4217 code (e.g., "INR", "USD")
+  symbol: string;       // Currency symbol (e.g., "₹", "$")
+  name: string;         // Display name (e.g., "Indian Rupee")
+}
+
+export const SUPPORTED_CURRENCIES: CurrencyOption[] = [
+  { code: 'INR', symbol: '₹', name: 'Indian Rupee' },
+  { code: 'USD', symbol: '$', name: 'US Dollar' },
+  { code: 'EUR', symbol: '€', name: 'Euro' },
+  { code: 'GBP', symbol: '£', name: 'British Pound' },
+  { code: 'JPY', symbol: '¥', name: 'Japanese Yen' },
+  { code: 'CAD', symbol: 'C$', name: 'Canadian Dollar' },
+];
+
+export const DEFAULT_CURRENCY = 'INR';
+```
 
 #### Monthly Summary Interface
 ```typescript
@@ -62,22 +84,31 @@ interface MonthlySummary {
 
 #### 1. ExpenseForm Component (Modified)
 **Current**: Accepts date picker and amount input
-**New**: Accepts month/year picker, description input, and amount input
+**New**: Accepts month/year picker, description input, currency selector, and amount input
 
 **Props:**
 ```typescript
 interface ExpenseFormProps {
-  onAddExpense: (month: string, description: string, amount: number) => void;
+  onAddExpense: (month: string, description: string, amount: number, currency: string) => void;
   onClearAll: () => void;
-  onExportCSV: () => void;  // New prop
+  onExportCSV: () => void;
+  defaultCurrency?: string;
 }
 ```
 
 **UI Changes:**
 - Replace date input (`<input type="date">`) with month input (`<input type="month">`)
 - Add description text input field
+- Add currency dropdown selector with supported currencies
 - Add "Export to CSV" button alongside "Clear All" button
-- Update form validation to check for month and description
+- Update form validation to check for month, description, and currency
+- Display currency symbol next to amount input for visual feedback
+
+**Currency Dropdown:**
+- Populate with SUPPORTED_CURRENCIES array
+- Default to INR
+- Show currency code and name (e.g., "INR - Indian Rupee")
+- Persist last selected currency in local storage
 
 #### 2. MonthlyView Component (New - Replaces Calendar)
 **Purpose**: Display expenses organized by month in a list or card layout
@@ -121,7 +152,8 @@ interface MonthCardProps {
 - Displays month name, total, and count
 - Shows ghost indicator if most expensive month
 - Highlights current month with special styling
-- Lists individual expenses with descriptions and amounts
+- Lists individual expenses with descriptions, amounts, and currency symbols
+- Groups expenses by currency if multiple currencies are used
 
 #### 4. MonthStats Component (Modified)
 **Current**: Shows current month total, most expensive month, total count, daily average
@@ -140,15 +172,59 @@ interface MonthCardProps {
 export function generateCSV(expenses: Expense[]): string;
 export function downloadCSV(csvContent: string, filename: string): void;
 export function exportExpensesToCSV(expenses: Expense[]): void;
+export function getCurrencySymbol(currencyCode: string): string;
 ```
 
 **CSV Format:**
 ```
-Month,Year,Description,Amount
-2024,01,Groceries,150.00
-2024,01,Utilities,200.00
-2024,02,Rent,1200.00
+Month,Year,Description,Amount,Currency
+2024-01,January,Groceries,150.00,INR
+2024-01,January,Utilities,200.00,INR
+2024-02,February,Rent,1200.00,USD
 ```
+
+#### 6. AnimatedBats Component (New)
+**Purpose**: Display animated bat decorations flying across the screen
+
+**Props:**
+```typescript
+interface AnimatedBatsProps {
+  count?: number;  // Number of bats to display (default: 5)
+}
+```
+
+**Features:**
+- Render multiple bat SVG elements
+- Apply CSS animations with varied durations and delays
+- Use different flight paths (horizontal, diagonal, curved)
+- Position in background layer (z-index below content)
+- Randomize starting positions and speeds
+- Use CSS transforms for smooth performance
+
+**Animation Patterns:**
+- Linear horizontal flight across screen
+- Sine wave motion for natural flight
+- Varied speeds (10-30 seconds per crossing)
+- Staggered start times to avoid clustering
+
+#### 7. HalloweenDecorations Component (New)
+**Purpose**: Add atmospheric Halloween decorative elements
+
+**Props:**
+```typescript
+interface HalloweenDecorationsProps {
+  showSpiderWebs?: boolean;
+  showParticles?: boolean;
+}
+```
+
+**Features:**
+- Spider web SVGs in corners (top-left, top-right)
+- Floating particle effects (small ghosts, stars, sparkles)
+- Additional pumpkin icons scattered in margins
+- Subtle spider elements on webs
+- All positioned in background layer
+- Responsive sizing for mobile devices
 
 ### Hook Modifications
 
@@ -167,7 +243,7 @@ export function useExpenses() {
     []
   );
 
-  const addExpense = (month: string, description: string, amount: number) => {
+  const addExpense = (month: string, description: string, amount: number, currency: string) => {
     // Implementation
   };
 
@@ -206,29 +282,31 @@ export function useExpenses() {
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│  🎃 ExpensePumpkin 🎃                               │
+│  🕸️ 🎃 ExpensePumpkin 🎃 🕸️         🦇 (flying)   │
 ├─────────────────────────────────────────────────────┤
 │  Add Your Monthly Expenses 👻                       │
 │  ┌─────────────────────────────────────────────┐   │
 │  │ Month: [Month Picker]                       │   │
 │  │ Description: [Text Input]                   │   │
-│  │ Amount: [Number Input]                      │   │
+│  │ Currency: [INR ▼]                           │   │
+│  │ Amount: ₹ [Number Input]                    │   │
 │  │ [Add Expense] [Export CSV] [Clear All]      │   │
 │  └─────────────────────────────────────────────┘   │
 ├─────────────────────────────────────────────────────┤
 │  Year Navigation: [< 2024 >] [Current Year]        │
 ├─────────────────────────────────────────────────────┤
-│  Monthly View (Grid of 12 months)                  │
+│  Monthly View (Grid of 12 months)      🦇 (flying) │
 │  ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐             │
 │  │ Jan  │ │ Feb  │ │ Mar  │ │ Apr  │             │
-│  │$1,200│ │ $800 │ │$1,500│ │ $950 │             │
+│  │₹1,200│ │ ₹800 │ │$1,500│ │ ₹950 │             │
 │  │ 3 exp│ │ 2 exp│ │ 4 exp│ │ 2 exp│             │
 │  └──────┘ └──────┘ └──────┘ └──────┘             │
-│  ... (8 more months)                               │
+│  ... (8 more months)                    🦇         │
 ├─────────────────────────────────────────────────────┤
-│  Statistics Cards                                   │
+│  Statistics Cards                          ✨       │
 │  [Current Month] [Most Expensive] [Total] [Avg]    │
 └─────────────────────────────────────────────────────┘
+🕸️ (corner webs)                    🦇 (flying bats)
 ```
 
 ### Visual Design Updates
@@ -236,7 +314,7 @@ export function useExpenses() {
 1. **Branding**
    - Update title to "ExpensePumpkin" with pumpkin emoji
    - Maintain Halloween color scheme (orange, purple, charcoal)
-   - Keep decorative elements (bats, spider webs)
+   - Add spider web decorations flanking the title
 
 2. **Monthly View Cards**
    - Card-based design with rounded corners
@@ -244,22 +322,40 @@ export function useExpenses() {
    - Expandable sections for expense details
    - Current month highlighted with orange border
    - Most expensive month shows ghost indicator
+   - Display currency symbols with amounts
 
-3. **Responsive Design**
-   - Mobile: 1-2 month cards per row
-   - Tablet: 3 month cards per row
-   - Desktop: 4 month cards per row
+3. **Animated Elements**
+   - 5 animated bats flying across screen at different speeds
+   - Floating particle effects (ghosts, sparkles)
+   - Spider webs in top corners
+   - All animations use CSS for performance
+
+4. **Decorative Elements**
+   - Spider webs: SVG elements in corners with subtle opacity
+   - Bats: SVG silhouettes with transform animations
+   - Particles: Small floating elements with fade/float animations
+   - Additional pumpkin icons in margins
+   - All positioned with z-index below interactive content
+
+5. **Responsive Design**
+   - Mobile: 1-2 month cards per row, smaller decorations
+   - Tablet: 3 month cards per row, medium decorations
+   - Desktop: 4 month cards per row, full decorations
+   - Reduce animation complexity on mobile for performance
 
 ## Data Flow
 
 ### Adding an Expense
 1. User selects month/year from month picker
-2. User enters description and amount
-3. Form validates inputs (month, description, amount > 0)
-4. `addExpense` called with month, description, amount
-5. New expense created with unique ID and timestamp
-6. Expense added to state and persisted to local storage
-7. UI updates to show new expense in appropriate month card
+2. User enters description
+3. User selects currency from dropdown (defaults to INR or last used)
+4. User enters amount
+5. Form validates inputs (month, description, currency, amount > 0)
+6. `addExpense` called with month, description, amount, currency
+7. New expense created with unique ID and timestamp
+8. Selected currency persisted to local storage as default
+9. Expense added to state and persisted to local storage
+10. UI updates to show new expense in appropriate month card with currency symbol
 
 ### Exporting to CSV
 1. User clicks "Export to CSV" button
@@ -283,6 +379,7 @@ export function useExpenses() {
 ### Form Validation Errors
 - **Missing month**: Display "Please select a month" error
 - **Missing description**: Display "Please enter a description" error
+- **Missing currency**: Display "Please select a currency" error
 - **Invalid amount**: Display "Please enter a valid amount greater than zero" error
 - **Validation errors**: Show inline error messages with orange color and warning icon
 
@@ -318,10 +415,16 @@ export function useExpenses() {
 - Verify responsive design on mobile, tablet, desktop
 - Test with no expenses (empty state)
 - Test with expenses across multiple months and years
-- Test CSV export with special characters in descriptions
+- Test CSV export with special characters in descriptions and multiple currencies
 - Test local storage persistence across page reloads
 - Verify ghost indicator appears on most expensive month
 - Test current month highlighting
+- Test currency dropdown selection and persistence
+- Verify currency symbols display correctly for all supported currencies
+- Test bat animations across different screen sizes
+- Verify decorative elements don't interfere with interactions
+- Test with `prefers-reduced-motion` enabled
+- Verify all animations are smooth and performant
 
 ## Migration Strategy
 
@@ -376,6 +479,10 @@ function migrateOldExpenses(): void {
 2. **Data Calculations**: Use useMemo for expensive calculations (monthly totals, most expensive month)
 3. **CSV Generation**: Generate CSV on-demand rather than keeping it in state
 4. **Local Storage**: Debounce writes to local storage if needed for performance
+5. **Animations**: Use CSS transforms and opacity for bat animations (GPU-accelerated)
+6. **Decorative Elements**: Limit particle count on mobile devices
+7. **Animation Performance**: Use `will-change` CSS property sparingly, prefer `transform` and `opacity`
+8. **Reduce Motion**: Respect `prefers-reduced-motion` media query for accessibility
 
 ## Accessibility
 
@@ -385,9 +492,78 @@ function migrateOldExpenses(): void {
 4. **Screen Reader Support**: Ensure expense data is announced properly
 5. **Color Contrast**: Verify text meets WCAG AA standards against backgrounds
 
+## Implementation Details
+
+### Currency Management
+**Local Storage Key**: `expense-pumpkin-currency` (stores last selected currency)
+
+**Currency Symbol Mapping**:
+```typescript
+const getCurrencySymbol = (code: string): string => {
+  const map: Record<string, string> = {
+    INR: '₹',
+    USD: '$',
+    EUR: '€',
+    GBP: '£',
+    JPY: '¥',
+    CAD: 'C$',
+  };
+  return map[code] || code;
+};
+```
+
+### Bat Animation Implementation
+**CSS Animation Strategy**:
+- Use `@keyframes` for flight paths
+- Apply `transform: translateX()` and `translateY()` for movement
+- Randomize `animation-duration` (15-30s) and `animation-delay` (0-10s)
+- Use `animation-iteration-count: infinite`
+- Position with `position: fixed` and high negative z-index
+
+**Bat SVG**:
+```svg
+<svg viewBox="0 0 64 64" class="bat">
+  <path d="M32,20 Q28,16 24,18 Q20,20 18,24 L16,28 Q14,30 12,28 Q10,26 8,28 Q6,30 8,32 L12,36 Q16,38 20,36 L24,32 Q28,28 32,26 Q36,28 40,32 L44,36 Q48,38 52,36 L56,32 Q58,30 56,28 Q54,26 52,28 Q50,30 48,28 L46,24 Q44,20 40,18 Q36,16 32,20 Z"/>
+</svg>
+```
+
+### Spider Web SVG
+**Corner Placement**:
+```css
+.spider-web {
+  position: fixed;
+  width: 200px;
+  height: 200px;
+  opacity: 0.3;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.spider-web.top-left {
+  top: 0;
+  left: 0;
+}
+
+.spider-web.top-right {
+  top: 0;
+  right: 0;
+  transform: scaleX(-1);
+}
+```
+
+### Floating Particles
+**Animation Pattern**:
+- Small ghost/sparkle elements (16x16px)
+- Float upward with slight horizontal drift
+- Fade in/out during animation
+- 3-5 particles total
+- Staggered start times
+
 ## Browser Compatibility
 
 - **Target Browsers**: Modern evergreen browsers (Chrome, Firefox, Safari, Edge)
 - **Month Input**: `<input type="month">` supported in all modern browsers
 - **CSV Download**: Use Blob API with fallback for older browsers
 - **Local Storage**: Check for availability and handle gracefully if unavailable
+- **CSS Animations**: Widely supported, with fallback for `prefers-reduced-motion`
+- **Unicode Symbols**: Currency symbols supported in all modern browsers

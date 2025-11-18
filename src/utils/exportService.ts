@@ -14,11 +14,11 @@ function escapeCSVField(field: string): string {
 
 /**
  * Generate CSV content from expense data
- * Format: Month,Year,Description,Amount
+ * Format: Month,Year,Description,Amount,Currency
  */
 export function generateCSV(expenses: Expense[]): string {
   // CSV headers
-  const headers = ['Month', 'Year', 'Description', 'Amount'];
+  const headers = ['Month', 'Year', 'Description', 'Amount', 'Currency'];
   const csvRows: string[] = [headers.join(',')];
 
   // Add data rows
@@ -31,6 +31,7 @@ export function generateCSV(expenses: Expense[]): string {
       escapeCSVField(year),
       escapeCSVField(expense.description),
       expense.amount.toFixed(2), // Format amount with 2 decimal places
+      escapeCSVField(expense.currency || 'USD'), // Include currency code
     ];
     
     csvRows.push(row.join(','));

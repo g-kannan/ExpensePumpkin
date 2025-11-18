@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { SUPPORTED_CURRENCIES, DEFAULT_CURRENCY, getCurrencySymbol } from '../utils/currencyConfig';
 
 interface ExpenseFormProps {
-  onAddExpense: (month: string, description: string, amount: number) => void;
+  onAddExpense: (month: string, description: string, amount: number, currency: string) => void;
   onClearAll: () => void;
   onExportCSV?: () => void;
 }
@@ -10,14 +11,39 @@ interface FormErrors {
   month?: string;
   description?: string;
   amount?: string;
+  currency?: string;
 }
+
+const CURRENCY_STORAGE_KEY = 'expense-pumpkin-currency';
 
 export function ExpenseForm({ onAddExpense, onClearAll, onExportCSV }: ExpenseFormProps) {
   const [month, setMonth] = useState('');
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
+  const [currency, setCurrency] = useState(DEFAULT_CURRENCY);
   const [errors, setErrors] = useState<FormErrors>({});
   const [showClearModal, setShowClearModal] = useState(false);
+
+  // Load saved currency preference on mount
+  useEffect(() => {
+    try {
+      const savedCurrency = localStorage.getItem(CURRENCY_STORAGE_KEY);
+      if (savedCurrency && SUPPORTED_CURRENCIES.some(c => c.code === savedCurrency)) {
+        setCurrency(savedCurrency);
+      }
+    } catch (error) {
+      console.warn('Could not load saved currency:', error);
+    }
+  }, []);
+
+  // Save currency preference when it changes
+  useEffect(() => {
+    try {
+      localStorage.setItem(CURRENCY_STORAGE_KEY, currency);
+    } catch (error) {
+      console.warn('Could not save currency preference:', error);
+    }
+  }, [currency]);
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
@@ -52,6 +78,13 @@ export function ExpenseForm({ onAddExpense, onClearAll, onExportCSV }: ExpenseFo
       newErrors.description = 'Description must be 200 characters or less';
     }
 
+    // Validate currency
+    if (!currency) {
+      newErrors.currency = 'Please select a currency';
+    } else if (!SUPPORTED_CURRENCIES.some(c => c.code === currency)) {
+      newErrors.currency = 'Invalid currency selected';
+    }
+
     // Validate amount
     if (!amount) {
       newErrors.amount = 'Please enter an expense amount';
@@ -76,11 +109,12 @@ export function ExpenseForm({ onAddExpense, onClearAll, onExportCSV }: ExpenseFo
     e.preventDefault();
 
     if (validateForm()) {
-      onAddExpense(month, description.trim(), parseFloat(amount));
+      onAddExpense(month, description.trim(), parseFloat(amount), currency);
       // Clear form after successful submission
       setMonth('');
       setDescription('');
       setAmount('');
+      // Keep currency selected for next entry
       setErrors({});
     }
   };
@@ -136,18 +170,46 @@ export function ExpenseForm({ onAddExpense, onClearAll, onExportCSV }: ExpenseFo
           </div>
 
           <div>
-            <label htmlFor="amount" className="block text-halloween-text-light font-medium mb-2">
-              Amount ($)
+            <label htmlFor="currency" className="block text-halloween-text-light font-medium mb-2">
+              Currency
             </label>
-            <input
-              type="number"
-              id="amount"
-              step="0.01"
-              placeholder="0.00"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              className="w-full bg-halloween-gray-medium border-2 border-halloween-purple focus:border-halloween-orange text-halloween-text-light rounded-lg px-4 py-2 outline-none transition-colors duration-300"
-            />
+            <select
+              id="currency"
+              value={currency}
+              onChange={(e) => setCurrency(e.target.value)}
+              className="w-full bg-halloween-gray-medium border-2 border-halloween-purple focus:border-halloween-orange text-halloween-text-light rounded-lg px-4 py-2 outline-none transition-colors duration-300 cursor-pointer"
+            >
+              {SUPPORTED_CURRENCIES.map((curr) => (
+                <option key={curr.code} value={curr.code}>
+                  {curr.code} - {curr.name} ({curr.symbol})
+                </option>
+              ))}
+            </select>
+            {errors.currency && (
+              <p className="text-halloween-orange-bright text-sm mt-1 wiggle-animation">
+                ⚠️ {errors.currency}
+              </p>
+            )}
+          </div>
+
+          <div>
+            <label htmlFor="amount" className="block text-halloween-text-light font-medium mb-2">
+              Amount ({getCurrencySymbol(currency)})
+            </label>
+            <div className="relative">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-halloween-text-muted text-lg">
+                {getCurrencySymbol(currency)}
+              </span>
+              <input
+                type="number"
+                id="amount"
+                step="0.01"
+                placeholder="0.00"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                className="w-full bg-halloween-gray-medium border-2 border-halloween-purple focus:border-halloween-orange text-halloween-text-light rounded-lg pl-12 pr-4 py-2 outline-none transition-colors duration-300"
+              />
+            </div>
             {errors.amount && (
               <p className="text-halloween-orange-bright text-sm mt-1 wiggle-animation">
                 ⚠️ {errors.amount}
